@@ -1,69 +1,21 @@
-name: Beta Branch CI
-
-# Declare default permissions as read only.
-permissions: read-all
-
-on:
-  push:
-    branches: [beta]
-  pull_request:
-    branches: [beta]
-  workflow_dispatch:
-
-defaults:
-  run:
-    shell: bash
+name: Build Calculator APK
+on: [push, workflow_dispatch]
 
 jobs:
-  # Test all samples on the beta channel. Since the beta channel will soon be
-  # promoted to stable, this branch is only concerned with the beta.
-  Beta-CI:
-    name: Test flutter beta channel
-    runs-on: ${{ matrix.os }}
-    if: github.repository == 'flutter/samples'
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
-      - uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-      - uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046
-        with:
-          channel: beta
-      - run: flutter pub get && dart tool/ci_script.dart
-  
-  # Verify the Android add-to-app samples build and pass tests with the beta
-  # channel.
-  android-build:
+  build:
     runs-on: ubuntu-latest
-    if: github.repository == 'flutter/samples'
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
-      - uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
         with:
-          distribution: 'zulu'
-          java-version: '17'
-      - uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046
+          channel: 'stable'
+      - name: Build APK
+        run: |
+          cd form_app
+          flutter pub get
+          flutter build apk --release
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
         with:
-          channel: beta
-      - run: ./tool/android_ci_script.sh
-
-  # Verify the iOS add-to-app samples build and pass tests with the beta
-  # channel.
-  # ios-build:
-  #   runs-on: macos-latest
-  #   if: github.repository == 'flutter/samples'
-  #   steps:
-  #     - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
-  #     - uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e
-  #       with:
-  #         distribution: 'zulu'
-  #         java-version: '17'
-  #     - uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046
-  #       with:
-  #         channel: beta
-  #     - run: ./tool/ios_ci_script.sh
+          name: calculator-apk
+          path: form_app/build/app/outputs/flutter-apk/app-release.apk
