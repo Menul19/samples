@@ -5,17 +5,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          
       - name: Build APK
         run: |
           cd form_app
           flutter pub get
-          flutter build apk --release
+          flutter build apk --release --no-tree-shake-icons
+          
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: calculator-apk
+          name: Menul-Calculator-APK
           path: form_app/build/app/outputs/flutter-apk/app-release.apk
