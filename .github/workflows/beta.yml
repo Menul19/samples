@@ -12,18 +12,14 @@ jobs:
         with:
           channel: 'stable'
           
-      - name: Install Dependencies
-        run: |
-          cd form_app
-          flutter pub get
-          
       - name: Build APK
         run: |
           cd form_app
+          flutter pub get
           flutter build apk --release --no-tree-shake-icons
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Calculator-App
+          name: Calculator-APK
           path: form_app/build/app/outputs/flutter-apk/app-release.apk
